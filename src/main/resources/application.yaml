@@ -27,7 +27,7 @@ spring:
         base-url: http://localhost:11001
         chat:
           options:
-            model: llama3
+            model: llama3.2
             temperature: 0.0
         
         embedding:
@@ -40,6 +40,25 @@ spring:
           distance-type: COSINE_DISTANCE 
           dimensions: 768 
           initialize-schema: false
+      mcp:
+            
+            # 1. O LADO SERVIDOR (Os Braços / Especialista em Dados)
+            server:
+              webmvc:
+                enabled: true
+                # O servidor expõe as ferramentas usando SSE (Server-Sent Events) nestas rotas HTTP
+                sse-path: /mcp/sse
+                message-path: /mcp/message
+
+            # 2. O LADO CLIENTE (O Cérebro / Llama 3)
+            client:
+              enabled: true
+              name: "AgenteEstoqueClient"
+              connections:
+                # Podemos ter várias conexões. Aqui criamos uma chamada "servidor-estoque"
+                servidor-estoque:
+                  type: sse
+                  url: http://localhost:8080/mcp/sse
 
   flyway:
     enabled: true
