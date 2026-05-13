@@ -4,7 +4,7 @@ services:
     ports:
       - '11001:11434'
   postgres:
-    image: 'postgres:latest'
+    image: 'postgres:15-alpine'
     environment:
       - 'POSTGRES_DB=estoque_db'
       - 'POSTGRES_PASSWORD=secret'
