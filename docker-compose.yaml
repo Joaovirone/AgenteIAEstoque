@@ -21,10 +21,10 @@ services:
         condition: service_healthy 
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    command: sh -c "ollama pull llama3"
+    command: sh -c "ollama pull llama3 && ollama pull nomic-embed-text"
 
   postgres:
-    image: 'postgres:15-alpine'
+    image: 'postgres/pgvector:pg15'
     container_name: estoque-db
     environment:
       - 'POSTGRES_DB=estoque_db'
