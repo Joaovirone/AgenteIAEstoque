@@ -23,12 +23,23 @@ spring:
 
   # 3. Configuração do Spring AI (Conexão com o LLM Local)
   ai:
-    ollama:
-      base-url: http://localhost:11001
-      chat:
-        options:
-          model: llama3
-          temperature: 0.0
+      ollama:
+        base-url: http://localhost:11001
+        chat:
+          options:
+            model: llama3
+            temperature: 0.0
+        
+        embedding:
+          options:
+            model: nomic-embed-text
+
+      vectorstore:
+        pgvector:
+          index-type: HNSW 
+          distance-type: COSINE_DISTANCE 
+          dimensions: 768 
+          initialize-schema: false
 
   flyway:
     enabled: true
