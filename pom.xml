@@ -125,11 +125,21 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-pgvector-store-spring-boot-starter</artifactId>
-			<version>1.0.0-M6</version>
+			<artifactId>spring-ai-pgvector-store</artifactId>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
+	<repositories>
+    <repository>
+        <id>spring-milestones</id>
+        <name>Spring Milestones</name>
+        <url>https://repo.spring.io/milestone</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
+	</repositories>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
