@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.AgentAIEstoque.application.service.OrquestradorHibridoService;
 import com.AgentAIEstoque.application.service.RagIngestionService;
 
 
@@ -26,48 +27,36 @@ public class ChatController {
     private final AgenteTextToSqlService agenteService;
     private final DatabaseExecutionService databaseService;
 
-    @Autowired
-    private RagIngestionService ragIngestionService;
+    private final RagIngestionService ragIngestionService;
+    private final OrquestradorHibridoService orquestradorService;
 
-    
     @PostMapping("/perguntar")
-    public ResponseEntity<Map<String, Object>> perguntarAoAgente(@RequestBody Map<String, String> request) {
+    public ResponseEntity<Map<String, String>> perguntarAoAgente(@RequestBody Map<String, String> request) {
        
         String pergunta = request.get("pergunta");
         if(pergunta == null || pergunta.isBlank()){
             return ResponseEntity.badRequest().body(Map.of("erro", "A pergunta não pode estar vazia."));
         }
 
-        Map<String, Object> respostaFinal = new HashMap<>();
-
         try {
-            String sqlGerado = agenteService.traduzirPerguntaParaSql(pergunta);
-            respostaFinal.put("sql_utilizado", sqlGerado);
 
-            List<Map<String, Object>> dados = databaseService.executarSqlDinamico(sqlGerado);
-            respostaFinal.put("dados", dados);
+            String respostaFinal = orquestradorService.responderPergunta(pergunta);
 
-            return ResponseEntity.ok(respostaFinal);
-        } catch (SecurityException se) {
-
-            return ResponseEntity.status(403).body(Map.of("erro_seguranca", se.getMessage()));
+            return ResponseEntity.ok(Map.of("resposta", respostaFinal));
+            
         } catch (Exception e) {
-
             return ResponseEntity.internalServerError().body(Map.of("erro_processamento", e.getMessage()));
         }
-        
     }
 
     @PostMapping("/ingerir-documentos")
     public ResponseEntity<Map<String, String>> iniciarIngestaoDocumentos() {
-        
         try {
             ragIngestionService.processarESalvarDocumento();
             return ResponseEntity.ok(Map.of("status", "Sucesso", "mensagem", "Manuais vetorizados no PostgreSQL."));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("erro", "Falha na ingestão: " + e.getMessage()));
         }
-        
     }
     
     
