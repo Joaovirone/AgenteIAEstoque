@@ -21,7 +21,7 @@ services:
         condition: service_healthy 
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    command: sh -c "ollama pull llama3 && ollama pull nomic-embed-text"
+    command: sh -c "ollama pull llama3.2 && ollama pull nomic-embed-text"
 
   postgres:
     image: 'postgres/pgvector:pg15'
