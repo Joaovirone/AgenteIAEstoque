@@ -1,0 +1,13 @@
+MANUAL TÉCNICO E POLÍTICA DE MANUTENÇÃO - PARAFUSADEIRA BOSCH (SKU: FE-001)
+
+1. MANUTENÇÃO PREVENTIVA
+A manutenção preventiva da Parafusadeira Bosch deve ser realizada a cada 6 meses ou após 100 horas de uso contínuo. 
+O procedimento inclui a lubrificação do mandril com óleo mineral e a limpeza das saídas de ar do motor com ar comprimido.
+
+2. RESOLUÇÃO DE PROBLEMAS (TROUBLESHOOTING)
+- Problema: O motor gira, mas o mandril não tem força.
+- Causa comum: Desgaste nas engrenagens de transmissão metálicas.
+- Solução: Solicitar a peça de reposição código BOSCH-ENG-445 e realizar a substituição na bancada nível 2.
+
+3. POLÍTICA DE GARANTIA E DEVOLUÇÃO
+Para acionar a garantia deste equipamento no sistema, o status_produto deve estar como 'ATIVO' e a movimentação de 'DEVOLUCAO' deve ser registrada no galpão central acompanhada de laudo técnico.
