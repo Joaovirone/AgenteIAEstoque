@@ -16,7 +16,7 @@ public class OrquestradorHibridoService {
         return chatClient.prompt()
                 .system("Você é um assistente logístico sênior. Você DEVE usar as funções fornecidas para buscar dados antes de responder. Nunca invente dados de estoque ou regras de manuais.")
                 .user(perguntaUsuario)
-                .tools("consultarBancoDeDados", "consultarManuais")
+                .tools("consultarBancoDeDados", "consultarManuais") 
                 .call()
                 .content();
     }
