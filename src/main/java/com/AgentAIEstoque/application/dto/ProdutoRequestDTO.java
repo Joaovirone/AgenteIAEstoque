@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import com.AgentAIEstoque.application.entity.Categoria;
 
 public record ProdutoRequestDTO(
+
+
     String nome, 
     String sku, 
     BigDecimal preco, 
