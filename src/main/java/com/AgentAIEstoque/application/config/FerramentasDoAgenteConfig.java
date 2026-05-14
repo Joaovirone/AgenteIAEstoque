@@ -1,43 +1,36 @@
 package com.AgentAIEstoque.application.config;
 
+import java.util.List;
 import java.util.function.Function;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Description;
 
-import com.AgentAIEstoque.application.service.AgenteTextToSqlService;
-import com.AgentAIEstoque.application.service.RagSearchService;
-
-import lombok.AllArgsConstructor;
+import com.AgentAIEstoque.application.dto.ProdutoResponseDTO;
+import com.AgentAIEstoque.application.service.ProdutoService;
 
 @Configuration
-@AllArgsConstructor
 public class FerramentasDoAgenteConfig {
+
+
+
+    @Bean
+    @Description("Busca a lista de todos os produtos disponíveis no estoque do banco de dados, incluindo quantidades, SKUs e preços.")
+    public Function<RequisicaoVazia, List<ProdutoResponseDTO>> consultarBancoDeDados(ProdutoService produtoService) {
+        
+        return requisicao -> produtoService.listarTodos();
+    }
+
+    @Bean
+    @Description("Verifica se um produto específico existe no estoque através do seu código SKU.")
+    public Function<RequisicaoSku, Boolean> consultarProdutoPorSku(ProdutoService produtoService) {
     
-
-    private final AgenteTextToSqlService sqlService;
-    private final RagSearchService ragService;
-
-    @Bean
-    @Description("Use esta ferramenta APENAS quando o usuário perguntar sobre quantidades, preços, SKUs ou status exato de produtos no estoque.")
-    public Function<String, String> consultarBancoDeDados() {
-        return (pergunta) -> {
-            System.out.println("🤖 IA decidiu usar a ferramenta: TEXT-TO-SQL");
-            // Nota: Se o seu serviço SQL devolvia o JSON/Lista, você pode precisar 
-            // ajustá-lo para devolver uma String legível aqui, ou o Spring AI converte automaticamente.
-            return sqlService.traduzirPerguntaParaSql(pergunta);
-        };
+        return requisicao -> produtoService.listarTodos().stream()
+                .anyMatch(p -> p.sku().equalsIgnoreCase(requisicao.sku()));
     }
 
-    // Ferramenta 2: RAG
-    @Bean
-    @Description("Use esta ferramenta APENAS quando o usuário perguntar sobre manuais, manutenção, garantias, defeitos ou políticas internas.")
-    public Function<String, String> consultarManuais() {
-        return (pergunta) -> {
-            System.out.println("🤖 IA decidiu usar a ferramenta: RAG (Manuais)");
-            return ragService.buscarContextoRelevante(pergunta);
-        };
-    }
+    public record RequisicaoVazia() {}
+    public record RequisicaoSku(String sku) {}
 
 }
