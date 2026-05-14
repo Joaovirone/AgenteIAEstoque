@@ -13,12 +13,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access= AccessLevel.PRIVATE)
 public class ProdutoMapper {
     
-    public static Produto toEntity(ProdutoRequestDTO produtoRequestDTO){
+    public Produto toEntity(ProdutoRequestDTO produtoRequestDTO){
 
         return new ModelMapper().map(produtoRequestDTO, Produto.class);
     }
 
-    public static ProdutoResponseDTO toProdutoResponseDTO(Produto produto){
+    public ProdutoResponseDTO toProdutoResponseDTO(Produto produto){
         
         return new ModelMapper().map(produto, ProdutoResponseDTO.class);
     }
