@@ -1,0 +1,30 @@
+<div class="chat-container">
+  <div class="chat-header">
+    <h3>🤖 Painel do Agente</h3>
+  </div>
+
+  <div class="chat-box">
+    @for (msg of mensagens; track $index) {
+      <div class="message" [class.user]="msg.autor === 'usuario'" [class.ai]="msg.autor === 'ia'">
+        {{ msg.texto }}
+      </div>
+    }
+
+    @if (carregando) {
+      <div class="message loading">Pensando...</div>
+    }
+  </div>
+
+  <div class="input-area">
+    <input 
+      type="text" 
+      [(ngModel)]="novaPergunta" 
+      (keyup.enter)="enviarMensagem()"
+      placeholder="Pergunte sobre o estoque ou manuais..."
+      [disabled]="carregando"
+    >
+    <button (click)="enviarMensagem()" [disabled]="carregando || !novaPergunta.trim()">
+      Enviar
+    </button>
+  </div>
+</div>
