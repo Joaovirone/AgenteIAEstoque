@@ -24,7 +24,7 @@ services:
     command: sh -c "ollama pull llama3.2 && ollama pull nomic-embed-text"
 
   postgres:
-    image: 'postgres/pgvector:pg15'
+    image: 'pgvector/pgvector:pg15'
     container_name: estoque-db
     environment:
       - 'POSTGRES_DB=estoque_db'
