@@ -31,3 +31,157 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# ==========================================
+# 1. Variáveis de Ambiente e Segredos (CRÍTICO)
+# ==========================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.jks
+*.p12
+*.pkcs12
+secrets.yml
+application-secret.properties
+application-secret.yml
+
+# ==========================================
+# 2. Backend: Java, Spring Boot e Maven
+# ==========================================
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs e Binários Java
+*.log
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# ==========================================
+# 3. Frontend: Node.js, Vue, Vite, React
+# ==========================================
+node_modules/
+jspm_packages/
+dist/
+dist-ssr/
+build/
+out/
+.nuxt/
+.next/
+.vuepress/
+coverage/
+.npm/
+
+# Logs NPM/Yarn/PNPM
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Caches de Lint e Testes
+.eslintcache
+.stylelintcache
+.jest-cache
+.tsbuildinfo
+
+# ==========================================
+# 4. Mobile: Expo, React Native, Android, iOS
+# ==========================================
+.expo/
+.expo-shared/
+web-build/
+expo-env.d.ts
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+*.apk
+*.aab
+# iOS
+ios/Pods/
+ios/build/
+*.ipa
+*.ipa.unaligned
+*.dSYM.zip
+*.dSYM
+
+# ==========================================
+# 5. Cloud, AWS e Serverless
+# ==========================================
+.serverless/
+.aws/
+.dynamodb/
+cdk.out/
+.terraform/
+
+# ==========================================
+# 6. IDEs e Editores de Código
+# ==========================================
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse / Spring Tool Suite (STS)
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+
+# ==========================================
+# 7. Sistema Operacional (Lixo de SO)
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+*.swp
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
