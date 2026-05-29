@@ -1,6 +1,7 @@
 package com.AgentAIEstoque.application.dto.mapper;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
 import com.AgentAIEstoque.application.dto.ProdutoRequestDTO;
 import com.AgentAIEstoque.application.dto.ProdutoResponseDTO;
@@ -9,7 +10,7 @@ import com.AgentAIEstoque.application.entity.Produto;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-
+@Component
 @NoArgsConstructor(access= AccessLevel.PRIVATE)
 public class ProdutoMapper {
     
