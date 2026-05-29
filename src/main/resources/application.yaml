@@ -39,7 +39,7 @@ spring:
           index-type: HNSW 
           distance-type: COSINE_DISTANCE 
           dimensions: 768 
-          initialize-schema: false
+          initialize-schema: true
       mcp:
             
             # 1. O LADO SERVIDOR (Os Braços / Especialista em Dados)
