@@ -1,1 +1,49 @@
-<p>estoque works!</p>
+<section class="estoque-container">
+	<header class="estoque-header">
+		<h3>Produtos em Estoque</h3>
+		<button type="button" (click)="recarregar()" [disabled]="carregando">
+			Atualizar
+		</button>
+	</header>
+
+	@if (carregando) {
+		<p class="estado">Carregando produtos...</p>
+	}
+
+	@if (erro) {
+		<p class="estado erro">{{ erro }}</p>
+	}
+
+	@if (!carregando && !erro && produtos.length === 0) {
+		<p class="estado">Nenhum produto cadastrado.</p>
+	}
+
+	@if (!carregando && !erro && produtos.length > 0) {
+		<div class="tabela-wrapper">
+			<table>
+				<thead>
+					<tr>
+						<th>Nome</th>
+						<th>SKU</th>
+						<th>Status</th>
+						<th>Preco</th>
+					</tr>
+				</thead>
+				<tbody>
+					@for (produto of produtos; track produto.id) {
+						<tr>
+							<td>{{ produto.nome }}</td>
+							<td>{{ produto.sku }}</td>
+							<td>
+								<span class="badge" [class.inativo]="produto.status !== 'ATIVO'">
+									{{ produto.status }}
+								</span>
+							</td>
+							<td>{{ produto.preco | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+</section>

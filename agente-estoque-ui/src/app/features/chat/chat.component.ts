@@ -1,7 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Necessário para o [(ngModel)] do input
-import { ApiService } from '../../core/services/api/api.service';
+import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../core/services/api/api.services';
+import { ChatResponse } from '../../core/models/produto.model';
 
 interface Mensagem {
   texto: string;
@@ -13,11 +14,11 @@ interface Mensagem {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.css' // ou .scss dependendo de como você gerou
+  styleUrl: './chat.scss'
 })
 export class ChatComponent {
   
-  private apiService = inject(ApiService);
+  private readonly apiService = inject(ApiService);
 
   mensagens: Mensagem[] = [
     { texto: 'Olá! Sou o seu assistente de estoque logístico (RAG + SQL). Como posso ajudar?', autor: 'ia' }
@@ -26,26 +27,22 @@ export class ChatComponent {
   novaPergunta: string = '';
   carregando: boolean = false;
 
-  enviarMensagem() {
+  enviarMensagem(): void {
     if (!this.novaPergunta.trim() || this.carregando) return;
 
-    // 1. Adiciona a pergunta do usuário na tela
     const perguntaTexto = this.novaPergunta;
     this.mensagens.push({ texto: perguntaTexto, autor: 'usuario' });
-    this.novaPergunta = ''; // Limpa o input
+    this.novaPergunta = '';
     this.carregando = true;
 
-    // 2. Chama o Spring Boot através do ApiService
     this.apiService.enviarPerguntaChat({ pergunta: perguntaTexto }).subscribe({
-      next: (response) => {
-        // Sucesso: Adiciona a resposta da IA na tela
+      next: (response: ChatResponse) => {
         this.mensagens.push({ texto: response.resposta, autor: 'ia' });
         this.carregando = false;
       },
-      error: (err) => {
-        // Erro: Mostra mensagem de falha
+      error: (err: unknown) => {
         console.error('Erro na API:', err);
-        this.mensagens.push({ texto: '❌ Erro ao conectar com o servidor.', autor: 'ia' });
+        this.mensagens.push({ texto: 'Erro ao conectar com o servidor.', autor: 'ia' });
         this.carregando = false;
       }
     });

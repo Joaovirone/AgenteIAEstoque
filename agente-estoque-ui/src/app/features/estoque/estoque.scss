@@ -1,0 +1,85 @@
+.estoque-container {
+	height: 100%;
+	border-radius: 14px;
+	border: 1px solid #d8dee7;
+	background: #ffffff;
+	padding: 1rem;
+}
+
+.estoque-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1rem;
+
+	h3 {
+		margin: 0;
+		color: #13304e;
+		font-size: 1rem;
+	}
+
+	button {
+		border: none;
+		border-radius: 10px;
+		background: #0b5ec7;
+		color: #ffffff;
+		font-weight: 600;
+		padding: 0.5rem 0.9rem;
+		cursor: pointer;
+	}
+
+	button:disabled {
+		opacity: 0.55;
+		cursor: not-allowed;
+	}
+}
+
+.estado {
+	margin: 0.75rem 0;
+	font-size: 0.93rem;
+	color: #334e68;
+}
+
+.estado.erro {
+	color: #a91d3a;
+}
+
+.tabela-wrapper {
+	overflow-x: auto;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.92rem;
+
+	th,
+	td {
+		text-align: left;
+		padding: 0.65rem 0.5rem;
+		border-bottom: 1px solid #edf2f7;
+		white-space: nowrap;
+	}
+
+	th {
+		color: #486581;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+	}
+}
+
+.badge {
+	display: inline-block;
+	padding: 0.2rem 0.55rem;
+	border-radius: 999px;
+	background: #dcfce7;
+	color: #14532d;
+	font-size: 0.76rem;
+	font-weight: 700;
+}
+
+.badge.inativo {
+	background: #fbe9ee;
+	color: #b42343;
+}
