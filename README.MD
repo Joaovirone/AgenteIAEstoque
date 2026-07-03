@@ -1,460 +1,334 @@
-# AI Inventory Agent - Text-to-SQL com Spring AI
+# AI Inventory Agent
 
-Um **agente autônomo de Inteligência Artificial** construído em **Java + Spring Boot** capaz de traduzir perguntas em linguagem natural diretamente em consultas SQL otimizadas e seguras.
+Plataforma de assistente de estoque baseada em IA para consulta de dados operacionais em linguagem natural, combinando:
 
-> **Objetivo:** Tornar acessível dados complexos de logística e estoque através de perguntas simples em linguagem natural, sem necessidade de conhecimento em SQL.
+- Backend Java com Spring Boot
+- Orquestracao com Spring AI + Ollama
+- Persistencia em PostgreSQL (com pgvector)
+- Frontend Angular para operacao (chat + painel de estoque)
 
----
+## Sumario
 
-## 📋 Índice
-
-- [O que é](#o-que-é)
+- [Visao Geral](#visao-geral)
 - [Arquitetura](#arquitetura)
-- [Tecnologias](#tecnologias)
-- [Pré-requisitos](#pré-requisitos)
-- [Começar Rápido](#começar-rápido)
-- [Endpoints da API](#endpoints-da-api)
-- [Exemplos de Uso](#exemplos-de-uso)
-- [Estrutura do Projeto](#estrutura-do-projeto)
-- [Desenvolvimento](#desenvolvimento)
+- [Stack Tecnologica](#stack-tecnologica)
+- [Estrutura do Repositorio](#estrutura-do-repositorio)
+- [Como Executar com Docker](#como-executar-com-docker)
+- [Como Executar Localmente (sem Docker)](#como-executar-localmente-sem-docker)
+- [Frontend (UI)](#frontend-ui)
+- [API Reference](#api-reference)
+- [Testes e Qualidade](#testes-e-qualidade)
+- [Observabilidade e Operacao](#observabilidade-e-operacao)
 - [Troubleshooting](#troubleshooting)
+- [Roadmap MVP](#roadmap-mvp)
 
----
+## Visao Geral
 
-## O que é
+O projeto entrega um fluxo MVP para operacao de estoque com IA:
 
-**AI Inventory Agent** é uma solução que elimina a barreira técnica entre usuários não-técnicos e dados estruturados. Ele funciona assim:
+1. O usuario pergunta em linguagem natural pelo endpoint de chat.
+2. O orquestrador consulta ferramentas e contexto (banco e manuais).
+3. O sistema retorna uma resposta textual consolidada no campo `resposta`.
 
-1. **Entrada:** Você faz uma pergunta em português natural
-2. **Processamento:** Uma IA (Llama 3) traduz a pergunta para SQL seguro
-3. **Execução:** O SQL é executado no PostgreSQL com validações de segurança
-4. **Saída:** Você recebe os dados em formato JSON estruturado
-
-**Caso de Uso Real:**
-```
-Gerente: "Quais produtos estão com estoque baixo?"
-↓
-Sistema gera e executa SQL seguro
-↓
-Resposta: [{ nome: "Teclado", quantidade: 5 }, ...]
-```
-
----
+A aplicacao tambem expoe CRUD de produtos para gestao do catalogo de estoque.
 
 ## Arquitetura
 
-O sistema utiliza o padrão **Text-to-SQL** com isolamento de segurança entre camadas:
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  CLIENT (REST API)                                       │
-│  POST /api/estoque/chat/perguntar                       │
-│  { "pergunta": "..." }                                  │
-└────────────────────┬────────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────────┐
-│  API BACKEND (Spring Boot)                              │
-│  - Recebe pergunta em linguagem natural                 │
-│  - Prepara contexto (schema + regras de negócio)        │
-└────────────────────┬────────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────────┐
-│  AGENTE LLM (Ollama + Llama 3)                         │
-│  - Processa semântica                                   │
-│  - Gera SQL semanticamente correto                      │
-└────────────────────┬────────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────────┐
-│  GUARDRAILS DE SEGURANÇA (Java)                        │
-│  - Bloqueia: DROP, UPDATE, DELETE, INSERT              │
-│  - Permite apenas: SELECT                              │
-└────────────────────┬────────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────────┐
-│  DATABASE (PostgreSQL)                                  │
-│  - Executa SQL validado                                 │
-│  - Retorna dados                                        │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+  U[Usuario / UI Angular] -->|HTTP| B[API Spring Boot]
+  B --> O[Ollama - Chat e Embeddings]
+  B --> P[(PostgreSQL + pgvector)]
+  B --> M[Documentos RAG]
+  O --> B
+  P --> B
+  M --> B
+  B --> U
 ```
 
-### Fluxo Detalhado
+Principais responsabilidades:
 
-1. **Pergunta:** Usuário envia pergunta via HTTP
-2. **Contextualização:** Backend anexa schema do BD + regras de negócio ao prompt
-3. **Geração:** Llama 3 traduz para SQL
-4. **Validação:** Sistema bloqueia comandos perigosos (DML/DDL)
-5. **Execução:** SQL seguro executado no PostgreSQL
-6. **Resposta:** Dados retornados em JSON estruturado
+- `ChatController`: recebe perguntas e devolve resposta textual.
+- `OrquestradorHibridoService`: coordena raciocinio e uso de ferramentas.
+- `ProdutoController`: endpoints REST para CRUD de produtos.
+- `RagIngestionService`: ingestao de documentos para busca semantica.
 
----
+## Stack Tecnologica
 
-## 🛠️ Tecnologias
+- Backend: Java 21, Spring Boot 3.5, Spring Data JPA, Spring Security
+- IA: Spring AI 1.0.0-M6, Ollama (`llama3.2`, `nomic-embed-text`)
+- Banco: PostgreSQL 15 (imagem `pgvector/pgvector:pg15`), Flyway
+- Frontend: Angular 21
+- Testes:
+  - Backend: JUnit 5 + Spring Boot Test
+  - Frontend: Vitest (`ng test`)
+- DevOps: Docker, Docker Compose
 
-| Camada | Tecnologias |
-|--------|-------------|
-| **Backend** | Java 21, Spring Boot 3.5, Spring Web, Spring Security |
-| **IA/LLM** | Spring AI, Ollama, Llama 3 |
-| **Dados** | PostgreSQL, Spring Data JPA, JdbcTemplate, Flyway |
-| **Testes** | JUnit 5, Mockito, Spring Boot Test |
-| **DevOps** | Docker, Docker Compose, Multi-stage Builds |
+## Estrutura do Repositorio
 
----
-
-## Pré-requisitos
-
-### Mínimo Recomendado
-
-- **Docker Desktop** (v20.10+) - [Download](https://www.docker.com/products/docker-desktop)
-- **Docker Compose** (v1.29+) - geralmente incluído no Docker Desktop
-
-### Requisitos de Hardware
-
-- **CPU:** 2+ cores
-- **RAM:** 4GB mínimo (6GB+ recomendado para Ollama)
-- **Disk:** 10GB livres (5GB para imagens Docker)
-
-### Verificar Instalação
-
-```bash
-docker --version
-docker-compose --version
+```text
+.
+├── src/main/java/com/AgentAIEstoque/application
+│   ├── config
+│   ├── controller
+│   ├── dto
+│   ├── entity
+│   ├── exception
+│   ├── repository
+│   └── service
+├── src/main/resources
+│   ├── application.yaml
+│   ├── db/migration
+│   ├── manuais
+│   └── prompts
+├── agente-estoque-ui
+│   └── src/app
+├── docker-compose.yaml
+├── Dockerfile
+└── pom.xml
 ```
 
----
+## Como Executar com Docker
 
-## Começar Rápido
+### Pre-requisitos
 
-### Clonar/Acessar o Repositório
+- Docker
+- Docker Compose
 
-```bash
-cd /caminho/do/projeto
-```
-
-### Iniciar o Ecossistema Completo
+### Subir ambiente completo
 
 ```bash
 docker-compose up --build -d
 ```
 
-**O que será iniciado:**
--  **PostgreSQL** (porta 5432) - Banco de dados relacional
--  **Ollama + Llama 3** (porta 11434) - Servidor LLM
--  **API Backend** (porta 8080) - Spring Boot Application
+Servicos iniciados:
 
-### Aguarde o Health Check
+- API: `http://localhost:8080`
+- PostgreSQL: `localhost:5001`
+- Ollama: `http://localhost:11001`
+
+### Verificar status
 
 ```bash
 docker-compose ps
 ```
 
-Espere todos os serviços estarem com status `Up` 
-
-### Testear a API
-
-```bash
-curl -X POST http://localhost:8080/api/estoque/chat/perguntar \
-  -H "Content-Type: application/json" \
-  -d '{"pergunta": "Quais produtos estão com estoque baixo?"}'
-```
-
-### Parar o Sistema
+### Parar ambiente
 
 ```bash
 docker-compose down
 ```
 
-> **Dados Persistem:** O volume Docker mantém os dados do PostgreSQL mesmo após parar os containers.
+## Como Executar Localmente (sem Docker)
 
----
+### Backend
 
-## 📡 Endpoints da API
+Pre-requisitos:
 
-### Base URL
-```
-http://localhost:8080
-```
-
-### 1. Chat - Perguntar (Text-to-SQL)
-
-**Endpoint:**
-```
-POST /api/estoque/chat/perguntar
-```
-
-**Request:**
-```json
-{
-  "pergunta": "Quais produtos da categoria Eletrônicos estão precisando de reposição (abaixo do estoque de segurança)?"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "sql_utilizado": "SELECT p.nome_produto, e.quantidade_disponivel FROM produtos p JOIN categorias c ON p.categoria_id = c.id JOIN estoque_atual e ON p.id = e.produto_id WHERE c.nome_categoria = 'Eletrônicos' AND e.quantidade_disponivel < e.estoque_minimo_seguranca;",
-  "dados": [
-    {
-      "nome_produto": "Teclado Mecânico",
-      "quantidade_disponivel": 5
-    },
-    {
-      "nome_produto": "Monitor 24\"",
-      "quantidade_disponivel": 2
-    }
-  ]
-}
-```
-
-**Headers Recomendados:**
-```
-Content-Type: application/json
-```
-
----
-
-## Exemplos de Uso
-
-### Exemplo 1: Produtos com Estoque Baixo
-```bash
-curl -X POST http://localhost:8080/api/estoque/chat/perguntar \
-  -H "Content-Type: application/json" \
-  -d '{
-    "pergunta": "Quantos produtos temos em estoque de segurança crítico?"
-  }'
-```
-
-### Exemplo 2: Movimentação de Estoque
-```bash
-curl -X POST http://localhost:8080/api/estoque/chat/perguntar \
-  -H "Content-Type: application/json" \
-  -d '{
-    "pergunta": "Quais foram as últimas movimentações de entrada de estoque?"
-  }'
-```
-
-### Exemplo 3: Análise por Categoria
-```bash
-curl -X POST http://localhost:8080/api/estoque/chat/perguntar \
-  -H "Content-Type: application/json" \
-  -d '{
-    "pergunta": "Qual categoria tem maior valor total em estoque?"
-  }'
-```
-
----
-
-## Estrutura do Projeto
-
-```
-.
-├── src/main/java/com/AgentAIEstoque/application/
-│   ├── Application.java                 # Classe main do Spring Boot
-│   ├── config/
-│   │   └── FerramentasDoAgenteConfig.java   # Configuração do Spring AI
-│   ├── controller/
-│   │   ├── ChatController.java          # Endpoints do chat
-│   │   └── ProdutoController.java       # Endpoints de produtos
-│   ├── dto/
-│   │   ├── ChatResponseDTO.java         # Response do chat
-│   │   ├── PerguntaRequestDTO.java      # Request de pergunta
-│   │   └── mapper/                      # Mapeadores DTO ↔ Entity
-│   ├── entity/
-│   │   ├── Produto.java
-│   │   ├── Categoria.java
-│   │   ├── EstoqueAtual.java
-│   │   └── MovimentacaoEstoque.java
-│   ├── repository/                      # Spring Data JPA
-│   ├── service/
-│   │   ├── AgenteTextToSqlService.java      # Integração LLM
-│   │   ├── DatabaseExecutionService.java    # Execução SQL segura
-│   │   ├── OrquestradorHibridoService.java  # Orquestração
-│   │   └── RagSearchService.java            # Busca RAG
-│   └── exception/
-│       ├── GlobalExceptionHandler.java
-│       └── RegraNegocioException.java
-├── src/main/resources/
-│   ├── application.yaml                 # Configurações Spring
-│   ├── db/migration/                    # Scripts Flyway
-│   │   ├── V1__criar_tabelas_iniciais.sql
-│   │   ├── V2__inserir_dados_estoque.sql
-│   │   └── V3__criar_extensao_vector.sql
-│   └── prompts/
-│       ├── system-prompt-estoque.st     # Prompt do sistema
-│       └── 1.txt
-├── docker-compose.yaml                  # Orquestração dos containers
-├── Dockerfile                           # Build multi-stage da API
-└── pom.xml                              # Dependências Maven
-```
-
----
-
-##  Desenvolvimento
-
-### Build Local (sem Docker)
-
-**Pré-requisitos:**
 - Java 21+
-- Maven 3.8+
-- PostgreSQL 14+ (rodando localmente)
-- Ollama rodando localmente
+- Maven 3.9+
+- PostgreSQL disponivel em `localhost:5001`
+- Ollama disponivel em `localhost:11001`
 
-**Passos:**
+Comandos:
 
-1. **Instalar dependências:**
 ```bash
-./mvnw clean install
-```
-
-2. **Configurar application.yaml:**
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/estoque_db
-    username: seu_usuario
-    password: sua_senha
-  jpa:
-    hibernate:
-      ddl-auto: validate
-  ai:
-    ollama:
-      base-url: http://localhost:11434
-      model: llama3
-```
-
-3. **Executar a aplicação:**
-```bash
+./mvnw clean package -DskipTests
 ./mvnw spring-boot:run
 ```
 
-### Executar Testes
+### Modelos Ollama esperados
+
+- `llama3.2`
+- `nomic-embed-text`
+
+## Frontend (UI)
+
+A UI fica em `agente-estoque-ui` e contem:
+
+- Chat de perguntas para o agente
+- Painel de produtos em estoque
+
+Executar localmente:
+
+```bash
+cd agente-estoque-ui
+npm install
+npm run start
+```
+
+Build de producao:
+
+```bash
+npm run build
+```
+
+> Nota: o backend atual permite CORS para `http://localhost:5173` e `http://localhost:3000`. Se usar `ng serve` em `4200`, ajuste CORS no backend ou rode o frontend em origem permitida.
+
+## API Reference
+
+Base URL: `http://localhost:8080`
+
+### Chat
+
+#### `POST /api/estoque/chat/perguntar`
+
+Request:
+
+```json
+{
+  "pergunta": "Quais produtos estao com estoque critico?"
+}
+```
+
+Response 200:
+
+```json
+{
+  "resposta": "No momento, os produtos em nivel critico sao ..."
+}
+```
+
+Erros comuns:
+
+- 400 quando `pergunta` estiver vazia.
+
+#### `POST /api/estoque/chat/ingerir-documentos`
+
+Dispara processamento de manuais para base vetorial.
+
+Response 200:
+
+```json
+{
+  "status": "Sucesso",
+  "mensagem": "Manuais foram vetorizados no Banco de Dados"
+}
+```
+
+### Produtos
+
+#### `GET /api/produtos`
+
+Lista produtos.
+
+Response 200 (exemplo):
+
+```json
+[
+  {
+    "id": "f50adbbf-2ed5-4f45-b95b-4d5e3a7e2e13",
+    "nome": "Teclado Mecanico",
+    "sku": "TEC-001",
+    "preco": 199.9,
+    "categoria": {
+      "id": "e4f67cc4-33c9-4d63-a6af-a2b8fd07d95f",
+      "nomeCategoria": "Perifericos"
+    },
+    "quantidadeAtual": 12
+  }
+]
+```
+
+#### `POST /api/produtos`
+
+Cria produto.
+
+Request (exemplo):
+
+```json
+{
+  "nome": "Teclado Mecanico",
+  "sku": "TEC-001",
+  "preco": 199.9,
+  "categoria": {
+    "id": "e4f67cc4-33c9-4d63-a6af-a2b8fd07d95f"
+  },
+  "quantidadeAtual": 12
+}
+```
+
+Response 201: produto criado.
+
+#### `GET /api/produtos/{id}`
+
+Busca produto por id.
+
+#### `PUT /api/produtos/{id}`
+
+Atualiza produto por id.
+
+#### `DELETE /api/produtos/{id}`
+
+Exclui produto por id. Retorna `204 No Content`.
+
+## Testes e Qualidade
+
+### Backend
 
 ```bash
 ./mvnw test
 ```
 
-### Análise de Cobertura de Testes
+### Frontend
 
 ```bash
-./mvnw test jacoco:report
-# Relatório em: target/site/jacoco/index.html
+cd agente-estoque-ui
+npm test -- --watch=false
 ```
 
-### Build de Produção
+## Observabilidade e Operacao
+
+Logs:
 
 ```bash
-./mvnw clean package -DskipTests
-```
-
----
-
-## Troubleshooting
-
-### Erro: "Connection refused: ollama"
-
-**Solução:**
-```bash
-# Verificar se Ollama está rodando
-docker-compose ps
-
-# Reiniciar Ollama
-docker-compose restart ollama
-
-# Verificar logs
-docker-compose logs ollama
-```
-
-### Erro: "Database connection failed"
-
-**Solução:**
-```bash
-# Verificar PostgreSQL
-docker-compose logs postgres
-
-# Reiniciar banco de dados
-docker-compose restart postgres
-
-# Verificar volume
-docker volume ls | grep estoque
-```
-
-### API retorna timeout
-
-**Solução:**
-- Aumente o timeout no `application.yaml`
-- Aumente a RAM disponível para Docker
-- Monitore CPU: `docker stats`
-
-### "Permission denied" ao executar docker-compose
-
-**Solução (Linux/Mac):**
-```bash
-sudo usermod -aG docker $USER
-# Faça logout e login novamente
-```
-
-### Portas já em uso
-
-**Solução:**
-```bash
-# Verificar qual processo usa a porta
-lsof -i :8080  # API
-lsof -i :5432  # PostgreSQL
-lsof -i :11434 # Ollama
-
-# Ou mudar ports no docker-compose.yaml
-```
-
----
-
-## Monitoramento
-
-### Ver Logs em Tempo Real
-
-```bash
-# Todos os serviços
 docker-compose logs -f
-
-# Apenas um serviço
-docker-compose logs -f api
+docker-compose logs -f api-agent
 docker-compose logs -f postgres
 docker-compose logs -f ollama
 ```
 
-### Health Check
+Health checks uteis:
 
 ```bash
-# PostgreSQL
-docker-compose exec postgres pg_isready -U postgres
-
-# Ollama
-curl http://localhost:11434/api/tags
-
-# API
-curl http://localhost:8080/actuator/health
+docker-compose exec postgres pg_isready -U root -d estoque_db
+curl http://localhost:11001/api/tags
 ```
 
+## Troubleshooting
+
+### Falha ao conectar no banco (`Connection refused localhost:5001`)
+
+- Garanta que o container `estoque-db` esteja `healthy`.
+- Reexecute:
+
+```bash
+docker-compose up -d
+```
+
+### Testes backend falham por dependencia externa
+
+Os testes de contexto precisam do banco disponivel na URL configurada (`localhost:5001`).
+
+### API nao responde perguntas de IA
+
+- Verifique se `ollama-init` concluiu com sucesso.
+- Confira modelos carregados:
+
+```bash
+curl http://localhost:11001/api/tags
+```
+
+## Roadmap MVP
+
+Itens recomendados para evolucao imediata:
+
+- Endpoints de health (`/actuator/health`) com Spring Boot Actuator.
+- Melhorar isolamento de testes backend (container de teste dedicado).
+- Endurecimento de seguranca para ambiente produtivo (authN/authZ).
+- Contrato OpenAPI/Swagger versionado para clientes.
+- Pipeline CI com build + testes backend/frontend.
+
 ---
 
-## Notas Importantes
-
--  **Segurança:** O sistema bloqueia automaticamente comandos DDL/DML (DROP, UPDATE, DELETE, INSERT)
--  **Dados:** O PostgreSQL usa volume Docker para persistência
--  **Migrations:** Flyway gerencia versionamento automático do schema
--  **Auth:** O Spring Security está habilitado - configure credenciais em produção
--  **LLM:** Ollama baixa o modelo Llama 3 automaticamente na primeira execução (~4GB)
-
----
-
-## Suporte
-
-Para dúvidas ou problemas:
-1. Consulte os logs: `docker-compose logs`
-2. Verifique a seção **Troubleshooting** acima
-3. Valide a arquitetura (portas, volumes, healthchecks)
-
----
-
-
----
-
-**Última atualização:** Maio 2026
+Projeto mantido por `Joaovirone/AgenteIAEstoque`.
