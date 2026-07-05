@@ -5,6 +5,10 @@ export interface Produto {
   sku: string;
   preco: number;
   status: string;
+  categoria?: string;
+  quantidadeAtual?: number;
+  estoqueMinimoSeguranca?: number;
+  localArmazenamento?: string;
 }
 
 // O espelho do seu PerguntaRequestDTO
