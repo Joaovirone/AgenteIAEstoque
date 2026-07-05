@@ -24,7 +24,11 @@
 				<thead>
 					<tr>
 						<th>Nome</th>
+						<th>Categoria</th>
 						<th>SKU</th>
+						<th>Disponivel</th>
+						<th>Minimo</th>
+						<th>Local</th>
 						<th>Status</th>
 						<th>Preco</th>
 					</tr>
@@ -33,7 +37,11 @@
 					@for (produto of produtos; track produto.id) {
 						<tr>
 							<td>{{ produto.nome }}</td>
+							<td>{{ produto.categoria || '-' }}</td>
 							<td>{{ produto.sku }}</td>
+							<td>{{ produto.quantidadeAtual ?? '-' }}</td>
+							<td>{{ produto.estoqueMinimoSeguranca ?? '-' }}</td>
+							<td>{{ produto.localArmazenamento || '-' }}</td>
 							<td>
 								<span class="badge" [class.inativo]="produto.status !== 'ATIVO'">
 									{{ produto.status }}
