@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Description;
 
 import com.AgentAIEstoque.application.dto.ProdutoResponseDTO;
 import com.AgentAIEstoque.application.service.ProdutoService;
+import com.AgentAIEstoque.application.service.RagSearchService;
 
 @Configuration
 public class FerramentasDoAgenteConfig {
@@ -30,7 +31,14 @@ public class FerramentasDoAgenteConfig {
                 .anyMatch(p -> p.sku().equalsIgnoreCase(requisicao.sku()));
     }
 
+    @Bean
+    @Description("Consulta os manuais internos vetorizados para recuperar contexto técnico relevante para a pergunta do usuário.")
+    public Function<RequisicaoPergunta, String> consultarManuais(RagSearchService ragSearchService) {
+        return requisicao -> ragSearchService.buscarContextoRelevante(requisicao.pergunta());
+    }
+
     public record RequisicaoVazia() {}
     public record RequisicaoSku(String sku) {}
+    public record RequisicaoPergunta(String pergunta) {}
 
 }
