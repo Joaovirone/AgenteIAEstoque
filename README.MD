@@ -101,6 +101,21 @@ Principais responsabilidades:
 docker-compose up --build -d
 ```
 
+### Primeira execucao recomendada (reset completo)
+
+Para garantir que todas as migrations (incluindo a carga rica de estoque) sejam aplicadas em ambiente limpo:
+
+```bash
+docker compose down -v
+docker compose up --build -d
+```
+
+Depois valide:
+
+```bash
+docker compose ps
+```
+
 Servicos iniciados:
 
 - API: `http://localhost:8080`
@@ -275,6 +290,28 @@ Exclui produto por id. Retorna `204 No Content`.
 ```bash
 cd agente-estoque-ui
 npm test -- --watch=false
+```
+
+## Validacao ponta a ponta
+
+1. Confira dados de estoque carregados:
+
+```bash
+curl http://localhost:8080/api/produtos
+```
+
+2. Ingerir manuais para RAG:
+
+```bash
+curl -X POST http://localhost:8080/api/estoque/chat/ingerir-documentos
+```
+
+3. Perguntar ao agente:
+
+```bash
+curl -X POST http://localhost:8080/api/estoque/chat/perguntar \
+  -H "Content-Type: application/json" \
+  -d '{"pergunta":"Quais itens estao abaixo do estoque minimo de seguranca?"}'
 ```
 
 ## Observabilidade e Operacao
