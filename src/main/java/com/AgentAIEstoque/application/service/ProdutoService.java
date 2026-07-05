@@ -9,8 +9,11 @@ import jakarta.transaction.Transactional;
 import com.AgentAIEstoque.application.dto.ProdutoRequestDTO;
 import com.AgentAIEstoque.application.dto.ProdutoResponseDTO;
 import com.AgentAIEstoque.application.dto.mapper.ProdutoMapper;
+import com.AgentAIEstoque.application.entity.EstoqueAtual;
 import com.AgentAIEstoque.application.entity.Produto;
+import com.AgentAIEstoque.application.entity.enums.StatusProduto;
 import com.AgentAIEstoque.application.exception.RegraNegocioException;
+import com.AgentAIEstoque.application.repository.EstoqueAtualRepository;
 import com.AgentAIEstoque.application.repository.ProdutoRepository;
 
 import lombok.AllArgsConstructor;
@@ -20,6 +23,7 @@ import lombok.AllArgsConstructor;
 public class ProdutoService {
     
     private final ProdutoRepository repository;
+    private final EstoqueAtualRepository estoqueAtualRepository;
     private final ProdutoMapper mapper;
 
     @Transactional
@@ -29,20 +33,31 @@ public class ProdutoService {
         }
 
         Produto novo = mapper.toEntity(request);
+        novo.setStatusProduto(StatusProduto.ATIVO);
         Produto salvo = repository.save(novo);
 
-        return mapper.toProdutoResponseDTO(salvo);
+        EstoqueAtual estoqueAtual = EstoqueAtual.builder()
+                .produto(salvo)
+                .localArmazenamento("CD Principal")
+                .quantidadeDisponivel(request.quantidadeAtual() != null ? request.quantidadeAtual() : 0)
+                .estoqueMinimoSeguranca(10)
+                .build();
+        EstoqueAtual estoqueSalvo = estoqueAtualRepository.save(estoqueAtual);
+
+        return toProdutoResponseDTO(salvo, estoqueSalvo);
     }
 
+    @Transactional
     public List<ProdutoResponseDTO> listarTodos(){
         return repository.findAll().stream()
-                            .map(mapper::toProdutoResponseDTO)
+                            .map(produto -> toProdutoResponseDTO(produto, buscarEstoquePorProduto(produto)))
                             .toList();
     }
 
+    @Transactional
     public ProdutoResponseDTO buscarPorId(UUID id) {
         Produto produto = buscarProdutoOuLancarExcecao(id);
-        return mapper.toProdutoResponseDTO(produto);
+        return toProdutoResponseDTO(produto, buscarEstoquePorProduto(produto));
     }
 
     @Transactional
@@ -59,8 +74,22 @@ public class ProdutoService {
         produtoExistente.setCategoria(request.categoria());
 
         Produto atualizado = repository.save(produtoExistente);
+
+        EstoqueAtual estoqueAtual = estoqueAtualRepository.findByProdutoId(id)
+                .orElseGet(() -> EstoqueAtual.builder()
+                        .produto(atualizado)
+                        .localArmazenamento("CD Principal")
+                        .estoqueMinimoSeguranca(10)
+                        .quantidadeDisponivel(0)
+                        .build());
+
+        if (request.quantidadeAtual() != null) {
+            estoqueAtual.setQuantidadeDisponivel(request.quantidadeAtual());
+        }
+
+        EstoqueAtual estoqueSalvo = estoqueAtualRepository.save(estoqueAtual);
         
-        return mapper.toProdutoResponseDTO(atualizado);
+        return toProdutoResponseDTO(atualizado, estoqueSalvo);
     }
 
     @Transactional
@@ -72,5 +101,24 @@ public class ProdutoService {
     private Produto buscarProdutoOuLancarExcecao(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException("Produto com ID " + id + " não encontrado."));
+    }
+
+    private EstoqueAtual buscarEstoquePorProduto(Produto produto) {
+        return estoqueAtualRepository.findByProdutoId(produto.getId())
+                .orElse(null);
+    }
+
+    private ProdutoResponseDTO toProdutoResponseDTO(Produto produto, EstoqueAtual estoqueAtual) {
+        return new ProdutoResponseDTO(
+                produto.getId(),
+                produto.getNomeProduto(),
+                produto.getSku(),
+                produto.getPrecoCusto(),
+                produto.getStatusProduto().name(),
+                produto.getCategoria() != null ? produto.getCategoria().getNomeCategoria() : null,
+                estoqueAtual != null ? estoqueAtual.getQuantidadeDisponivel() : null,
+                estoqueAtual != null ? estoqueAtual.getEstoqueMinimoSeguranca() : null,
+                estoqueAtual != null ? estoqueAtual.getLocalArmazenamento() : null
+        );
     }
 }
