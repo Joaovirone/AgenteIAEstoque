@@ -3,6 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ChatRequest, ChatResponse, Produto } from '../../models/produto.model';
 
+type RuntimeEnv = {
+  API_URL?: string;
+};
+
+type RuntimeWindow = Window & {
+  __env?: RuntimeEnv;
+};
+
 @Injectable({
   providedIn: 'root' // Isso garante que o serviço seja um Singleton (instância única)
 })
@@ -11,8 +19,9 @@ export class ApiService {
   // Injeta o HttpClient nativo do Angular
   private http = inject(HttpClient);
   
-  // A URL base do seu Spring Boot
-  private readonly API_URL = 'http://localhost:8080/api';
+  // URL base da API definida em runtime pelo container (com fallback local)
+  private readonly API_URL =
+    (window as RuntimeWindow).__env?.API_URL ?? 'http://localhost:8080/api';
 
   // Método para falar com a IA
   enviarPerguntaChat(request: ChatRequest): Observable<ChatResponse> {
