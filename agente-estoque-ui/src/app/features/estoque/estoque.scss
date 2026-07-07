@@ -6,6 +6,36 @@
 	padding: 1rem;
 }
 
+.layout-estoque {
+	display: grid;
+	grid-template-columns: 220px 1fr;
+	gap: 1rem;
+	height: 100%;
+}
+
+.barra-lateral {
+	border-radius: 12px;
+	background: linear-gradient(180deg, #f3f8ff 0%, #e8f0fb 100%);
+	border: 1px solid #d4deea;
+	padding: 0.9rem;
+
+	h4 {
+		margin: 0 0 0.6rem;
+		font-size: 0.95rem;
+		color: #102a43;
+	}
+
+	p {
+		margin: 0 0 0.55rem;
+		color: #334e68;
+		font-size: 0.86rem;
+	}
+}
+
+.conteudo-estoque {
+	min-width: 0;
+}
+
 .estoque-header {
 	display: flex;
 	justify-content: space-between;
@@ -48,6 +78,58 @@
 	overflow-x: auto;
 }
 
+.paginacao {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 0.8rem;
+	flex-wrap: wrap;
+	margin-top: 0.9rem;
+
+	span {
+		font-size: 0.86rem;
+		color: #486581;
+	}
+
+	button {
+		border: 1px solid #cdd8e5;
+		border-radius: 8px;
+		background: #f8fbff;
+		color: #123f74;
+		font-weight: 600;
+		padding: 0.35rem 0.7rem;
+		cursor: pointer;
+	}
+
+	button:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+}
+
+.seletor-paginas {
+	display: flex;
+	gap: 0.35rem;
+	flex-wrap: wrap;
+}
+
+.botao-pagina {
+	min-width: 2rem;
+	padding: 0.35rem 0.55rem;
+	border: 1px solid #cdd8e5;
+	border-radius: 8px;
+	background: #ffffff;
+	color: #1f3a56;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.botao-pagina.ativa {
+	background: #0b5ec7;
+	border-color: #0b5ec7;
+	color: #ffffff;
+}
+
 table {
 	width: 100%;
 	border-collapse: collapse;
@@ -82,4 +164,28 @@ table {
 .badge.inativo {
 	background: #fbe9ee;
 	color: #b42343;
+}
+
+@media (max-width: 900px) {
+	.layout-estoque {
+		grid-template-columns: 1fr;
+	}
+
+	.barra-lateral {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.6rem;
+
+		h4 {
+			grid-column: 1 / -1;
+		}
+
+		p {
+			margin: 0;
+		}
+	}
+
+	.paginacao {
+		justify-content: space-between;
+	}
 }

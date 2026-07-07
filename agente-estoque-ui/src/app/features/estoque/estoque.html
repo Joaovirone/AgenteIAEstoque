@@ -1,57 +1,93 @@
 <section class="estoque-container">
-	<header class="estoque-header">
-		<h3>Produtos em Estoque</h3>
-		<button type="button" (click)="recarregar()" [disabled]="carregando">
-			Atualizar
-		</button>
-	</header>
+	<div class="layout-estoque">
+		<aside class="barra-lateral">
+			<h4>Visao rapida</h4>
+			<p>Total de produtos: <strong>{{ produtos.length }}</strong></p>
+			<p>Itens por pagina: <strong>{{ itensPorPagina }}</strong></p>
+			<p>Pagina atual: <strong>{{ paginaAtual }}/{{ totalPaginas }}</strong></p>
+		</aside>
 
-	@if (carregando) {
-		<p class="estado">Carregando produtos...</p>
-	}
+		<div class="conteudo-estoque">
+			<header class="estoque-header">
+				<h3>Produtos em Estoque</h3>
+				<button type="button" (click)="recarregar()" [disabled]="carregando">
+					Atualizar
+				</button>
+			</header>
 
-	@if (erro) {
-		<p class="estado erro">{{ erro }}</p>
-	}
+			@if (carregando) {
+				<p class="estado">Carregando produtos...</p>
+			}
 
-	@if (!carregando && !erro && produtos.length === 0) {
-		<p class="estado">Nenhum produto cadastrado.</p>
-	}
+			@if (erro) {
+				<p class="estado erro">{{ erro }}</p>
+			}
 
-	@if (!carregando && !erro && produtos.length > 0) {
-		<div class="tabela-wrapper">
-			<table>
-				<thead>
-					<tr>
-						<th>Nome</th>
-						<th>Categoria</th>
-						<th>SKU</th>
-						<th>Disponivel</th>
-						<th>Minimo</th>
-						<th>Local</th>
-						<th>Status</th>
-						<th>Preco</th>
-					</tr>
-				</thead>
-				<tbody>
-					@for (produto of produtos; track produto.id) {
-						<tr>
-							<td>{{ produto.nome }}</td>
-							<td>{{ produto.categoria || '-' }}</td>
-							<td>{{ produto.sku }}</td>
-							<td>{{ produto.quantidadeAtual ?? '-' }}</td>
-							<td>{{ produto.estoqueMinimoSeguranca ?? '-' }}</td>
-							<td>{{ produto.localArmazenamento || '-' }}</td>
-							<td>
-								<span class="badge" [class.inativo]="produto.status !== 'ATIVO'">
-									{{ produto.status }}
-								</span>
-							</td>
-							<td>{{ produto.preco | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
-						</tr>
-					}
-				</tbody>
-			</table>
+			@if (!carregando && !erro && produtos.length === 0) {
+				<p class="estado">Nenhum produto cadastrado.</p>
+			}
+
+			@if (!carregando && !erro && produtos.length > 0) {
+				<div class="tabela-wrapper">
+					<table>
+						<thead>
+							<tr>
+								<th>Nome</th>
+								<th>Categoria</th>
+								<th>SKU</th>
+								<th>Disponivel</th>
+								<th>Minimo</th>
+								<th>Local</th>
+								<th>Status</th>
+								<th>Preco</th>
+							</tr>
+						</thead>
+						<tbody>
+							@for (produto of produtosPaginados; track produto.id) {
+								<tr>
+									<td>{{ produto.nome }}</td>
+									<td>{{ produto.categoria || '-' }}</td>
+									<td>{{ produto.sku }}</td>
+									<td>{{ produto.quantidadeAtual ?? '-' }}</td>
+									<td>{{ produto.estoqueMinimoSeguranca ?? '-' }}</td>
+									<td>{{ produto.localArmazenamento || '-' }}</td>
+									<td>
+										<span class="badge" [class.inativo]="produto.status !== 'ATIVO'">
+											{{ produto.status }}
+										</span>
+									</td>
+									<td>{{ produto.preco | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+
+				<nav class="paginacao" aria-label="Paginacao de produtos">
+					<button type="button" (click)="paginaAnterior()" [disabled]="paginaAtual === 1">
+						Anterior
+					</button>
+
+					<div class="seletor-paginas" role="group" aria-label="Selecionar pagina">
+						@for (pagina of paginasDisponiveis; track pagina) {
+							<button
+								type="button"
+								class="botao-pagina"
+								[class.ativa]="paginaAtual === pagina"
+								(click)="irParaPagina(pagina)"
+								[attr.aria-current]="paginaAtual === pagina ? 'page' : null"
+							>
+								{{ pagina }}
+							</button>
+						}
+					</div>
+
+					<span>Pagina {{ paginaAtual }} de {{ totalPaginas }}</span>
+					<button type="button" (click)="proximaPagina()" [disabled]="paginaAtual === totalPaginas">
+						Proxima
+					</button>
+				</nav>
+			}
 		</div>
-	}
+	</div>
 </section>
