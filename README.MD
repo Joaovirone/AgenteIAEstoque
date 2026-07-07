@@ -119,6 +119,7 @@ docker compose ps
 Servicos iniciados:
 
 - API: `http://localhost:8080`
+- Frontend: `http://localhost:4200`
 - PostgreSQL: `localhost:5001`
 - Ollama: `http://localhost:11001`
 
@@ -164,6 +165,22 @@ A UI fica em `agente-estoque-ui` e contem:
 - Chat de perguntas para o agente
 - Painel de produtos em estoque
 
+### Frontend via Docker Compose (recomendado)
+
+O frontend sobe junto com os demais servicos via `docker compose up --build -d` e fica disponivel em:
+
+- `http://localhost:4200`
+
+A imagem do frontend gera um arquivo de configuracao em runtime (`env.js`) no startup do container, usando a variavel de ambiente `API_URL`.
+
+No `docker-compose.yaml`, o valor padrao esta como:
+
+- `API_URL=/api`
+
+Com isso, as chamadas do frontend usam rota relativa e o Nginx faz proxy para o backend (`api-agent:8080`), evitando acoplamento com `localhost:8080` no codigo da UI.
+
+Para apontar para outra API em ambiente diferente, altere apenas a variavel `API_URL` no servico `frontend-ui` do Compose.
+
 Executar localmente:
 
 ```bash
@@ -178,7 +195,7 @@ Build de producao:
 npm run build
 ```
 
-> Nota: o backend atual permite CORS para `http://localhost:5173` e `http://localhost:3000`. Se usar `ng serve` em `4200`, ajuste CORS no backend ou rode o frontend em origem permitida.
+> Nota: em execucao via Docker Compose, o frontend acessa a API por `/api` (proxy Nginx). Em execucao local com `ng serve`, a UI usa fallback para `http://localhost:8080/api` quando `env.js` nao estiver presente.
 
 ## API Reference
 
@@ -294,19 +311,25 @@ npm test -- --watch=false
 
 ## Validacao ponta a ponta
 
-1. Confira dados de estoque carregados:
+1. Confira dados de estoque carregados (via API direta):
 
 ```bash
 curl http://localhost:8080/api/produtos
 ```
 
-2. Ingerir manuais para RAG:
+2. Confira integracao frontend -> API pelo proxy `/api`:
+
+```bash
+curl http://localhost:4200/api/produtos
+```
+
+3. Ingerir manuais para RAG:
 
 ```bash
 curl -X POST http://localhost:8080/api/estoque/chat/ingerir-documentos
 ```
 
-3. Perguntar ao agente:
+4. Perguntar ao agente:
 
 ```bash
 curl -X POST http://localhost:8080/api/estoque/chat/perguntar \
