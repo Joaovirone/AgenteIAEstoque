@@ -1,8 +1,8 @@
 # ESTÁGIO 1: Compilação (Build)
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 # Compila o projeto Angular para produção
 RUN npm run build --configuration=production
@@ -14,6 +14,8 @@ FROM nginx:alpine
 COPY --from=build /app/dist/agente-estoque-ui/browser /usr/share/nginx/html
 # Copia a nossa regrinha de rotas
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/40-generate-env.sh /docker-entrypoint.d/40-generate-env.sh
+RUN chmod +x /docker-entrypoint.d/40-generate-env.sh
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

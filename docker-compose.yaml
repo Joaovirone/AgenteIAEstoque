@@ -57,6 +57,18 @@ services:
       - SPRING_DATASOURCE_PASSWORD=root 
       - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
 
+  frontend-ui:
+    build:
+      context: ./agente-estoque-ui
+      dockerfile: Dockerfile
+    container_name: estoque-ui
+    environment:
+      - API_URL=/api
+    ports:
+      - "4200:80"
+    depends_on:
+      - api-agent
+
 volumes:
   db_data:
   ollama_data: 
