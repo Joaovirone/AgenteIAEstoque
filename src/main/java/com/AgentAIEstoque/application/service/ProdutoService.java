@@ -6,6 +6,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.PageRequest;
+
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
@@ -70,6 +72,26 @@ public class ProdutoService {
         @Transactional
         public boolean existePorSku(String sku) {
         return repository.existsBySku(sku);
+        }
+
+        @Transactional
+        public String gerarResumoRapidoEstoque() {
+            long totalProdutos = repository.count();
+            long totalItens = estoqueAtualRepository.somarQuantidadeDisponivel();
+            long totalCriticos = estoqueAtualRepository.contarEstoqueCritico();
+
+            List<String> exemplosCriticos = estoqueAtualRepository.listarNomesProdutosCriticos(PageRequest.of(0, 3));
+
+            String base = "Resumo rapido do estoque: "
+                    + "ha " + totalProdutos + " produtos cadastrados e "
+                    + totalItens + " itens disponiveis no total. "
+                    + "Produtos em nivel critico: " + totalCriticos + ".";
+
+            if (exemplosCriticos.isEmpty()) {
+                return base;
+            }
+
+            return base + " Exemplos de itens criticos: " + String.join(", ", exemplosCriticos) + ".";
         }
 
     @Transactional
