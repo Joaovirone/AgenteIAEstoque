@@ -1,7 +1,10 @@
 package com.AgentAIEstoque.application.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
@@ -49,10 +52,25 @@ public class ProdutoService {
 
     @Transactional
     public List<ProdutoResponseDTO> listarTodos(){
-        return repository.findAll().stream()
-                            .map(produto -> toProdutoResponseDTO(produto, buscarEstoquePorProduto(produto)))
-                            .toList();
+        List<Produto> produtos = repository.findAllComCategoria();
+
+        List<UUID> idsProdutos = produtos.stream()
+            .map(Produto::getId)
+            .toList();
+
+        Map<UUID, EstoqueAtual> estoquePorProdutoId = estoqueAtualRepository.findByProdutoIdIn(idsProdutos)
+            .stream()
+            .collect(Collectors.toMap(estoque -> estoque.getProduto().getId(), Function.identity(), (atual, substituto) -> atual));
+
+        return produtos.stream()
+            .map(produto -> toProdutoResponseDTO(produto, estoquePorProdutoId.get(produto.getId())))
+            .toList();
     }
+
+        @Transactional
+        public boolean existePorSku(String sku) {
+        return repository.existsBySku(sku);
+        }
 
     @Transactional
     public ProdutoResponseDTO buscarPorId(UUID id) {

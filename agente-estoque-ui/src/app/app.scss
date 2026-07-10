@@ -1,32 +1,38 @@
 :host {
 	display: block;
 	min-height: 100dvh;
-	font-family: "Manrope", "Segoe UI", sans-serif;
+	font-family: "Sora", "Segoe UI", sans-serif;
 	background:
-		radial-gradient(circle at 15% 10%, rgba(30, 136, 229, 0.14), transparent 30%),
-		radial-gradient(circle at 90% 85%, rgba(0, 188, 212, 0.14), transparent 36%),
-		linear-gradient(135deg, #f7fafc 0%, #edf4fb 100%);
+		radial-gradient(circle at 8% 8%, rgba(255, 87, 34, 0.28), transparent 36%),
+		radial-gradient(circle at 92% 86%, rgba(0, 200, 140, 0.24), transparent 34%),
+		linear-gradient(135deg, #ffe1bf 0%, #d6f3ff 44%, #ffe8f8 100%);
 }
 
 .dashboard {
 	max-width: 1180px;
 	margin: 0 auto;
-	padding: 1.4rem;
+	padding: 1.6rem;
 }
 
 .topbar {
-	margin-bottom: 1rem;
+	margin-bottom: 1.25rem;
+	background: rgba(255, 255, 255, 0.74);
+	border: 1px solid rgba(255, 255, 255, 0.82);
+	box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+	backdrop-filter: blur(8px);
+	border-radius: 18px;
+	padding: 1rem 1.1rem;
 
 	h1 {
 		margin: 0;
-		color: #0a2c4a;
+		color: #0b2845;
 		font-size: clamp(1.35rem, 2.2vw, 2rem);
 		letter-spacing: -0.02em;
 	}
 
 	p {
 		margin: 0.3rem 0 0;
-		color: #486581;
+		color: #3e516a;
 		font-size: 0.95rem;
 	}
 }
@@ -39,6 +45,7 @@
 
 .painel {
 	min-height: 520px;
+	filter: drop-shadow(0 10px 16px rgba(23, 27, 58, 0.1));
 }
 
 @media (max-width: 980px) {

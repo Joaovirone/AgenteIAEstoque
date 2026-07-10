@@ -28,8 +28,7 @@ public class FerramentasDoAgenteConfig {
     @Description("Verifica se um produto específico existe no estoque através do seu código SKU.")
     public Function<RequisicaoSku, Boolean> consultarProdutoPorSku(ProdutoService produtoService) {
     
-        return requisicao -> produtoService.listarTodos().stream()
-                .anyMatch(p -> p.sku().equalsIgnoreCase(requisicao.sku()));
+        return requisicao -> produtoService.existePorSku(requisicao.sku());
     }
 
     @Bean

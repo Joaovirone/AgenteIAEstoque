@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api/api.services';
 import { ChatResponse } from '../../core/models/produto.model';
@@ -42,7 +43,21 @@ export class ChatComponent {
       },
       error: (err: unknown) => {
         console.error('Erro na API:', err);
-        this.mensagens.push({ texto: 'Erro ao conectar com o servidor.', autor: 'ia' });
+
+        if (err instanceof HttpErrorResponse) {
+          if (err.status === 504) {
+            this.mensagens.push({ texto: 'A consulta demorou demais. Tente uma pergunta mais objetiva.', autor: 'ia' });
+          } else if (err.status === 503) {
+            this.mensagens.push({ texto: 'Os modelos de IA ainda estao inicializando. Aguarde alguns instantes.', autor: 'ia' });
+          } else if (err.error?.resposta) {
+            this.mensagens.push({ texto: err.error.resposta, autor: 'ia' });
+          } else {
+            this.mensagens.push({ texto: 'Erro ao conectar com o servidor.', autor: 'ia' });
+          }
+        } else {
+          this.mensagens.push({ texto: 'Erro ao conectar com o servidor.', autor: 'ia' });
+        }
+
         this.carregando = false;
       }
     });

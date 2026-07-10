@@ -39,6 +39,12 @@ public class ChatController {
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                         .body(new ChatResponseDTO("Os modelos de IA ainda nao foram carregados no Ollama. Aguarde a inicializacao e tente novamente."));
             }
+
+            if (mensagem.contains("Tempo limite")) {
+                return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT)
+                        .body(new ChatResponseDTO("A consulta demorou demais para ser processada. Tente uma pergunta mais objetiva ou repita em instantes."));
+            }
+
             throw ex;
         }
     }

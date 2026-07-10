@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { timeout } from 'rxjs/operators';
 import { ChatRequest, ChatResponse, Produto } from '../../models/produto.model';
 
 type RuntimeEnv = {
@@ -25,7 +26,9 @@ export class ApiService {
 
   // Método para falar com a IA
   enviarPerguntaChat(request: ChatRequest): Observable<ChatResponse> {
-    return this.http.post<ChatResponse>(`${this.API_URL}/estoque/chat/perguntar`, request);
+    return this.http
+      .post<ChatResponse>(`${this.API_URL}/estoque/chat/perguntar`, request)
+      .pipe(timeout(60000));
   }
 
   // Método para listar produtos no painel de estoque
