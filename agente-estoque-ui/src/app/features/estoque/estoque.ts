@@ -48,7 +48,7 @@ export class Estoque implements OnInit {
         this.carregando = false;
       },
       error: () => {
-        this.erro = 'Nao foi possivel carregar os produtos.';
+        this.erro = 'Nao foi possivel carregar os produtos. Verifique se a API esta em execucao.';
         this.carregando = false;
       }
     });

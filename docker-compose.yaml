@@ -14,15 +14,19 @@ services:
       retries: 5
 
   ollama-init:
-    image: 'ollama/ollama:latest'
+    image: 'curlimages/curl:8.8.0'
     container_name: ollama-pull-model
     depends_on:
       ollama:
         condition: service_healthy 
-    environment:
-      - OLLAMA_HOST=http://ollama:11434
-    entrypoint: ["/bin/sh", "-c"]
-    command: sh -c "ollama pull llama3.2 && ollama pull nomic-embed-text"
+    restart: on-failure
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        curl -sS -X POST http://ollama:11434/api/pull -H 'Content-Type: application/json' --data '{"name":"llama3.2","stream":false}'
+        curl -sS -X POST http://ollama:11434/api/pull -H 'Content-Type: application/json' --data '{"name":"nomic-embed-text","stream":false}'
+        curl -sS http://ollama:11434/api/tags
 
   postgres:
     image: 'pgvector/pgvector:pg15'

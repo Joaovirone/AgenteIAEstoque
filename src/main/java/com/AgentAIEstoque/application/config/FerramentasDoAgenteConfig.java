@@ -1,6 +1,7 @@
 package com.AgentAIEstoque.application.config;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.context.annotation.Bean;
@@ -34,11 +35,42 @@ public class FerramentasDoAgenteConfig {
     @Bean
     @Description("Consulta os manuais internos vetorizados para recuperar contexto técnico relevante para a pergunta do usuário.")
     public Function<RequisicaoPergunta, String> consultarManuais(RagSearchService ragSearchService) {
-        return requisicao -> ragSearchService.buscarContextoRelevante(requisicao.pergunta());
+        return requisicao -> ragSearchService.buscarContextoRelevante(normalizarPergunta(requisicao.pergunta()));
+    }
+
+    private static String normalizarPergunta(Object payloadPergunta) {
+        if (payloadPergunta == null) {
+            return "";
+        }
+
+        if (payloadPergunta instanceof String texto) {
+            return texto;
+        }
+
+        if (payloadPergunta instanceof Map<?, ?> mapa) {
+            Object valorDireto = mapa.get("pergunta");
+            if (valorDireto != null) {
+                return normalizarPergunta(valorDireto);
+            }
+
+            Object query = mapa.get("query");
+            if (query != null) {
+                return normalizarPergunta(query);
+            }
+
+            Object texto = mapa.get("texto");
+            if (texto != null) {
+                return normalizarPergunta(texto);
+            }
+
+            return mapa.toString();
+        }
+
+        return payloadPergunta.toString();
     }
 
     public record RequisicaoVazia() {}
     public record RequisicaoSku(String sku) {}
-    public record RequisicaoPergunta(String pergunta) {}
+    public record RequisicaoPergunta(Object pergunta) {}
 
 }

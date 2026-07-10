@@ -2,6 +2,7 @@ package com.AgentAIEstoque.application.controller;
 
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,10 +30,17 @@ public class ChatController {
 
     @PostMapping("/perguntar")
     public ResponseEntity<ChatResponseDTO> perguntarAoAgente(@RequestBody @Valid PerguntaRequestDTO request) {
-       
-        String respostaFinal = orquestradorService.responderPergunta(request.pergunta());
-
-        return ResponseEntity.ok(new ChatResponseDTO(respostaFinal));
+        try {
+            String respostaFinal = orquestradorService.responderPergunta(request.pergunta());
+            return ResponseEntity.ok(new ChatResponseDTO(respostaFinal));
+        } catch (RuntimeException ex) {
+            String mensagem = ex.getMessage() == null ? "" : ex.getMessage();
+            if (mensagem.contains("model") && mensagem.contains("not found")) {
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                        .body(new ChatResponseDTO("Os modelos de IA ainda nao foram carregados no Ollama. Aguarde a inicializacao e tente novamente."));
+            }
+            throw ex;
+        }
     }
 
     @PostMapping("/ingerir-documentos")
